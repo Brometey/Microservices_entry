@@ -2,7 +2,7 @@ import { IsEmail, IsOptional, IsString } from "class-validator";
 
 export namespace AccountRegister {
 	 // сервис.команда.тип 
-	export const topic = 'account.login.command'
+	export const topic = 'account.register.command'
 
 	export class Request {
 		@IsEmail()

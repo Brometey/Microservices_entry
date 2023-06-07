@@ -13,6 +13,7 @@ export class AuthService {
 		){}
 
 	async register ({email, password, displayName}: AccountRegister.Request): Promise<AccountRegister.Response>{
+		console.log(email, password, displayName);
 		const oldUser = await this.userRepository.findUser(email);
 		if (oldUser) {
 			throw new Error('Такой пользователь уже зарегистрирован');
@@ -24,6 +25,7 @@ export class AuthService {
 			role: UserRole.Student
 		}).setPassword(password);
 		const newUser = await this.userRepository.createUser(newUserEntity);
+		console.log(newUser);
 		return {email: newUser.email};
 	}
 
