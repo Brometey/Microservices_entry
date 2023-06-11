@@ -1,0 +1,18 @@
+import { IsString } from 'class-validator';
+import {IUser} from '@purple/interfaces'
+export namespace AccountUserInfo{
+	 // сервис.команда.тип 
+	export const topic = 'account.user-info.query'
+
+	export class Request {
+		@IsString()
+		id: string;
+	}
+ 
+	export class Response{
+		user: Omit<IUser, 'passwordHash'>;	
+	}
+
+}
+
+
