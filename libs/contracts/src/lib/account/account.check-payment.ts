@@ -1,5 +1,6 @@
 import { PurchaseState } from '@purple/interfaces';
 import { IsString } from 'class-validator';
+import { PaymentStatus } from '../payment/payment.check';
 
 export namespace AccountCheckPayment{
 	 // сервис.команда.тип 
@@ -14,7 +15,7 @@ export namespace AccountCheckPayment{
 	}
  
 	export class Response{
-		status: PurchaseState;
+		status: PaymentStatus;
 	}
 
 }

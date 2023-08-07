@@ -1,11 +1,12 @@
 import { Body } from "@nestjs/common";
 import { AccountBuyCourse, AccountChangeProfile, AccountCheckPayment } from "@purple/contracts";
-import { RMQValidate, RMQRoute } from "nestjs-rmq";
+import { RMQValidate, RMQRoute, RMQService } from "nestjs-rmq";
 import { UserRepository } from "./repositories/user.repository";
 import { UserEntity } from "./entities/user.entity";
+import { BuyCourseSaga } from "./sagas/buy-course.saga";
 
 export class UserCommand{
-	constructor(private readonly userRepository: UserRepository){}
+	constructor(private readonly userRepository: UserRepository, private readonly rmqService: RMQService){}
 
 	@RMQValidate()
 	@RMQRoute(AccountChangeProfile.topic)
@@ -22,13 +23,29 @@ export class UserCommand{
 	@RMQValidate()
 	@RMQRoute(AccountBuyCourse.topic)
 	async buyCourse (@Body() {userId, courseId} : AccountBuyCourse.Request): Promise<AccountBuyCourse.Response>{
-		
+		const existedUser = await this.userRepository.findUserById(userId);
+		if (!existedUser) {
+			throw new Error('Такого пользователя нет');
+		}
+		const userEntity = new UserEntity(existedUser);
+		const saga = new BuyCourseSaga(userEntity, courseId, this.rmqService);
+		const { user, paymentLink} = await saga.getState().pay();
+		this.userRepository.updateUser(user);
+		return { paymentLink }
 	}
 
 	@RMQValidate()
 	@RMQRoute(AccountCheckPayment.topic)
-	async checkPayment (@Body() {userId, courseId} : AccountChangeProfile.Request): Promise<AccountCheckPayment.Response>{
-		
+	async checkPayment (@Body() {userId, courseId} : AccountCheckPayment.Request): Promise<AccountCheckPayment.Response>{
+		 const existedUser = await this.userRepository.findUserById(userId);
+		if (!existedUser) {
+			throw new Error('Такого пользователя нет');
+		}
+		const userEntity = new UserEntity(existedUser);
+		const saga = new BuyCourseSaga(userEntity, courseId, this.rmqService);
+		const { user, status } = await saga.getState().checkPayment();
+		await this.userRepository.updateUser(user);
+		return {status};
 	}
 }
 
