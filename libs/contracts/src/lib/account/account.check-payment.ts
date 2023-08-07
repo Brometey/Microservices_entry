@@ -1,4 +1,3 @@
-import { PurchaseState } from '@purple/interfaces';
 import { IsString } from 'class-validator';
 import { PaymentStatus } from '../payment/payment.check';
 
